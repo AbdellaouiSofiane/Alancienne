@@ -1,6 +1,7 @@
-from django.db import models
 from decimal import Decimal
 
+from django.db import models
+from django.core.exceptions import ValidationError
 
 class Product(models.Model):
 	TVA_CHOICES = [
@@ -29,7 +30,7 @@ class Product(models.Model):
 		return round(self.price * (1 + self.tva), 2)
 
 	def stock_left(self):
-		return stock_available - stock_ordered
+		return self.stock_available - self.stock_ordered
 
 	def clean(self, *args, **kwargs):
 		if self.stock_ordered > self.stock_available :

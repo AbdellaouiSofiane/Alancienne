@@ -1,3 +1,12 @@
 from django.contrib import admin
+from .models import Product
 
-# Register your models here.
+
+
+class ProductAdmin(admin.ModelAdmin):
+	list_display = ['name', 'price', 'tva', 'price_ttc',
+					'stock_available', 'stock_ordered', 
+				    'stock_left']
+
+
+admin.site.register(Product, ProductAdmin)
