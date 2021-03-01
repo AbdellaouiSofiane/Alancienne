@@ -42,3 +42,30 @@ class Product(models.Model):
 
 
 
+class Cart(models.Model):
+	session_id = models.CharField(max_length=250)
+	checked_out = models.BooleanField(default=False)
+
+	def __str__(self):
+		return str(self.id)
+
+	def get_total_ttc(self):
+		return sum([item.product.get_price_ttc() *  item.quantity for item in self.items.all()])
+
+	def get_total_quantity(self):
+		return sum([item.quantity for item in self.items.all()])
+	
+
+class Item(models.Model):
+	cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name='items')
+	product = models.ForeignKey(Product, on_delete=models.CASCADE)
+	quantity = models.PositiveIntegerField(default=0)
+
+	def __str__(self):
+		return f'{self.product} x {self.quantity}'
+
+	def clean(self, *args, **kwargs):
+		if self.quantity > self.product.get_stock_left():
+			raise ValidationError({'quantity':'Stock insuffisant.'})
+		else:
+			super(Item, self).save(*args, **kwargs)
