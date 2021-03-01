@@ -5,7 +5,6 @@ from django.core.exceptions import ValidationError
 
 class Product(models.Model):
 	TVA_CHOICES = [
-		(None, 'Taux TVA'),
 		(Decimal('0.05'), '5,5 %'),
 		(Decimal('0.2'), '20 %')
 	]
