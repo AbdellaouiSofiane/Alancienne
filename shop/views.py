@@ -1,7 +1,9 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.views.generic import CreateView
 from django.contrib.messages.views import SuccessMessageMixin
+from django.contrib import messages
+from django.core.exceptions import ObjectDoesNotExist
 from django.http import JsonResponse
 
 from .models import Product, Item, Cart
@@ -27,9 +29,13 @@ def cart(request):
 			Item.objects.create(cart=cart, product=product)
 	return render(request, 'shop/cart.html', {'cart': cart})
 
+
 def cart_update_ajax(request):
 	if request.method == 'POST' and request.is_ajax():
-		item = Item.objects.get(id=request.POST['item_id'])
+		try:
+			item = Item.objects.get(id=request.POST['item_id'])
+		except ObjectDoesNotExist :
+			return JsonResponse({'error': 'No such item exists in the database'})
 		item.quantity = request.POST.get('item_quantity', 0)
 		item.save()
 		response = {
@@ -38,4 +44,22 @@ def cart_update_ajax(request):
 		}
 		return JsonResponse(response, status=200)
 	else :
-		return JsonResponse({'error': 'failed'})
+		return JsonResponse({'error': 'Failed'})
+
+
+def checkout(request):
+	cart = Cart.objects.get(
+						session_id=request.session.session_key,
+						checked_out=False)
+	if cart.total_ttc() > 0:
+		for item in cart.items.all():
+			item.product.stock_ordered += item.quantity
+			item.product.save()
+		cart.checked_out = True
+		cart.save()
+		request.session.flush()
+		messages.success(request, 'Votre panier a été commandé.')
+	else:
+		messages.warning(request, 'Votre panier est vide, merci de selectionner la quantité désirée.')
+
+	return redirect('cart')
