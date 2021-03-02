@@ -58,5 +58,33 @@ Your shopping cart
 
 
 
+	<script type="text/javascript">
+	document.querySelectorAll('.update-form').forEach(item => {
+		item.addEventListener('change', event => {
+			let item_id = item.getAttribute('name') ;
+			let item_quantity = event.target.value ;
+			let csrfmiddlewaretoken = '{{csrf_token}}' ;
+			 
+			$.ajax({
+				type: 'POST',
+				url : '/cart_update/',
+				data: {
+					item_id : item_id,
+					item_quantity : item_quantity,
+					csrfmiddlewaretoken : csrfmiddlewaretoken,
+				},
+				success:function(response){
+					document.getElementById('total_price').innerHTML = response['total_price'] + '€'
+					document.getElementById('total_quantity').innerHTML = response['total_quantity']
+					
+				}
+			});
+		});
+	});
+
+
+</script>
+
+
 {% endblock %}
 
