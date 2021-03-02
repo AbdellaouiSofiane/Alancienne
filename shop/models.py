@@ -31,6 +31,9 @@ class Product(models.Model):
 	def stock_left(self):
 		return self.stock_available - self.stock_ordered
 
+	def get_choices_list(self):
+		return range(0, self.stock_available - self.stock_ordered + 1)
+
 	def clean(self, *args, **kwargs):
 		if self.stock_ordered > self.stock_available :
 			raise ValidationError(
@@ -49,10 +52,10 @@ class Cart(models.Model):
 	def __str__(self):
 		return str(self.id)
 
-	def get_total_ttc(self):
-		return sum([item.product.get_price_ttc() *  item.quantity for item in self.items.all()])
+	def total_ttc(self):
+		return sum([item.product.price_ttc() *  item.quantity for item in self.items.all()])
 
-	def get_total_quantity(self):
+	def total_quantity(self):
 		return sum([item.quantity for item in self.items.all()])
 	
 
@@ -65,7 +68,7 @@ class Item(models.Model):
 		return f'{self.product} x {self.quantity}'
 
 	def clean(self, *args, **kwargs):
-		if self.quantity > self.product.get_stock_left():
+		if self.quantity > self.product.stock_left():
 			raise ValidationError({'quantity':'Stock insuffisant.'})
 		else:
 			super(Item, self).save(*args, **kwargs)
