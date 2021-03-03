@@ -59,10 +59,11 @@ def cart_update_ajax(request):
 
 
 def checkout(request):
-	cart = Cart.objects.get(
-						session_id=request.session.session_key,
-						checked_out=False
+	cart = get_object_or_404(Cart,
+			session_id=request.session.session_key,
+			checked_out=False
 	)
+
 	if cart.total_ttc() > 0:
 		for item in cart.items.all():
 			item.product.stock_ordered += item.quantity

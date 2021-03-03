@@ -10,12 +10,9 @@
 	
 </head>
 <body>
-
 	<div id="header">
-		<a href="/" class="logo">Alancienne</a>
+		<a href="{% url 'product_create' %}" class="logo"><h2>Alancienne</h2></a>
 	</div>
-
-
 	<div id="subheader">
 		<div class="cart">
 			<a href="{% url 'cart' %}">
@@ -23,7 +20,6 @@
 			</a>
 		</div>
 	</div>
-
 	{% if messages %}
      {% for message in messages %}
          <div class="text-center alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
@@ -34,7 +30,6 @@
          </div>
      {% endfor %}
  	{% endif %}
-
 	<div id="content">
 		{% block content %}
 		{% endblock content%}
