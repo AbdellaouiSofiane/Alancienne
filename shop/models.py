@@ -5,7 +5,7 @@ from django.core.exceptions import ValidationError
 
 class Product(models.Model):
 	TVA_CHOICES = [
-		(Decimal('0.05'), '5,5 %'),
+		(Decimal('0.055'), '5,5 %'),
 		(Decimal('0.2'), '20 %')
 	]
 	name = models.CharField(verbose_name='nom', 
@@ -15,8 +15,8 @@ class Product(models.Model):
 								decimal_places=2)
 	tva = models.DecimalField(verbose_name='tva', 
 							  choices=TVA_CHOICES, 
-							  max_digits=3, 
-							  decimal_places=2)
+							  max_digits=4, 
+							  decimal_places=3)
 	stock_available = models.PositiveIntegerField(
 								verbose_name='stock disponible')
 	stock_ordered = models.PositiveIntegerField(

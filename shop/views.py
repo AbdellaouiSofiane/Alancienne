@@ -19,14 +19,23 @@ class ProductCreateView(SuccessMessageMixin, CreateView):
 
 
 def cart(request):
+	# Create a session key if first visit
 	if not request.session.exists(request.session.session_key):
    		request.session.create() 
+   	# Get or create client order
 	cart, created = Cart.objects.get_or_create(
 						session_id=request.session.session_key,
-						checked_out=False)
+						checked_out=False
+					)
+	# Create cart item if first visit
 	if created:
 		for product in Product.objects.all():
-			Item.objects.create(cart=cart, product=product)
+			# Exludes product with zero available stock
+			if product.stock_left() > 0 :
+				Item.objects.create(
+					cart=cart, 
+					product=product
+				)
 	return render(request, 'shop/cart.html', {'cart': cart})
 
 
@@ -35,7 +44,9 @@ def cart_update_ajax(request):
 		try:
 			item = Item.objects.get(id=request.POST['item_id'])
 		except ObjectDoesNotExist :
-			return JsonResponse({'error': 'No such item exists in the database'})
+			return JsonResponse(
+				{'error': 'No such item exists in the database'}
+			)
 		item.quantity = request.POST.get('item_quantity', 0)
 		item.save()
 		response = {
@@ -50,7 +61,8 @@ def cart_update_ajax(request):
 def checkout(request):
 	cart = Cart.objects.get(
 						session_id=request.session.session_key,
-						checked_out=False)
+						checked_out=False
+	)
 	if cart.total_ttc() > 0:
 		for item in cart.items.all():
 			item.product.stock_ordered += item.quantity
@@ -60,6 +72,7 @@ def checkout(request):
 		request.session.flush()
 		messages.success(request, 'Votre panier a été commandé.')
 	else:
-		messages.warning(request, 'Votre panier est vide, merci de selectionner la quantité désirée.')
-
+		messages.warning(request, 
+			'Votre panier est vide, merci de selectionner \
+			la quantité désirée.')
 	return redirect('cart')
